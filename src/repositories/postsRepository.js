@@ -13,12 +13,13 @@ class PostsRepository {
   static async getAll({ userID }) {
     const getPosts = await dbConn.query(
       `SELECT
-         post.id, posts.images, posts.description, posts.created_at,
-        users.username AS user_username, users.profile_picture AS user_profile_picture,
-        (SELECT COUNT(*) FROM post_likes WHERE post_id = posts.id) AS total_likes
-      FROM posts
-      LEFT JOIN users ON users.id = posts.user_id
-      LEFT JOIN post_likes ON post_likes.post_id = posts.id AND post_likes.user_id = $1`,
+      posts.id, posts.user_id, posts.images, posts.description, posts.created_at,
+      users.username AS user_username, users.profile_picture AS user_profile_picture,
+      user_post_likes.id AS is_user_liked,
+      (SELECT COUNT(*) FROM post_likes WHERE post_id = posts.id) AS total_likes
+    FROM posts
+    JOIN users ON users.id = posts.user_id
+    LEFT JOIN post_likes AS user_post_likes ON user_post_likes.post_id = posts.id AND user_post_likes.user_id = $1`,
       [userID]
     );
 

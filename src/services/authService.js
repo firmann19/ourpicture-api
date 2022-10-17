@@ -1,25 +1,25 @@
 const usersRepository = require("../repositories/usersRepository");
 const Cloudinary = require("../utils/cloudinary");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET, JWT_EXPIRE } = process.env;
+const PasswordChecker = require("../utils/passwordChecker");
+const TokenGenerator = require("../utils/tokenGenerator");
 
 const SALT_ROUND = 10;
 
 class AuthService {
   static async login({ email, password }) {
     try {
-      //cek keberadaan email
+      // Check user existence
       const { getUser } = await usersRepository.getByEmail({
         email,
       });
 
-      if (!getUser) {
+      if (!getUser)
         return {
           status: false,
           error: {
             code: 400,
-            message: "Email not registered",
+            message: "Email belum terdaftar",
           },
           error_validation: [
             {
@@ -29,17 +29,19 @@ class AuthService {
             },
           ],
         };
-      }
 
-      //cek apakah password benar
-      const isMatch = await bcrypt.compare(password, getUser.password);
+      // Validate Password
+      const validatePassword = await PasswordChecker.validate(
+        password,
+        getUser.password
+      );
 
-      if (!isMatch) {
+      if (!validatePassword.status) {
         return {
           status: false,
           error: {
-            code: 401,
-            message: "wrong password",
+            code: validatePassword.error.code,
+            message: validatePassword.error.message,
           },
           error_validation: [
             {
@@ -51,32 +53,29 @@ class AuthService {
         };
       }
 
-      //Generate token jwt
-      const token = jwt.sign(
-        { id: getUser.id, email: getUser.email },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRE }
-      );
+      // Generate Token
+      const getToken = await TokenGenerator.generateJWT({
+        id: getUser.id,
+        email: getUser.email,
+      });
 
       return {
         status: true,
         error: null,
         error_validation: [],
-        token,
+        token: getToken,
       };
     } catch (err) {
-      console.log(err);
       return {
         status: false,
         error: {
-          code: 400,
+          code: 500,
           message: err.message,
         },
         error_validation: [],
       };
     }
   }
-
   static async register({
     email,
     username,

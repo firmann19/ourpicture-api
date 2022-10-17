@@ -2,7 +2,6 @@ const { validationResult } = require("express-validator");
 const postLikesService = require("../services/postLikesService");
 
 exports.create = async (req, res, next) => {
-  const { post_id } = req.body;
 
   //validate payload
   const errors = validationResult(req.body);
@@ -13,6 +12,9 @@ exports.create = async (req, res, next) => {
       message: "Silahkan isi semua form dengan benar",
       error_validation: errors.array(),
     });
+
+  const { post_id } = req.body;
+
   const createdPostLike = await postLikesService.create({
     user_id: req.user.id,
     post_id: post_id,

@@ -13,8 +13,8 @@ exports.authenticate = async (req, res, next) => {
   try {
     const decodedToken = jwt.verify(token, JWT_SECRET);
 
-    const { getUser } = await usersRepository.getByEmail({
-      email: decodedToken.email,
+    const { getUser } = await usersRepository.getByID({
+      id: decodedToken.id,
     });
 
     req.user = getUser;

@@ -42,23 +42,25 @@ exports.login = async (req, res, next) => {
   const errors = validationResult(req.body);
 
   if (!errors.isEmpty())
-    return res.status(400)
-  const loginResponse = await authService.login({
-    email,
-    password,
+  return res.status(400).jsend.fail({
+    code: 400,
+    message: "Silakan isi semua form dengan benar",
+    error_validation: errors.array(),
   });
 
-  if (!loginResponse.status)
-    return res.status(loginResponse.error.code).jsend.fail({
-      code: loginResponse.error.code,
-      message: loginResponse.error.message,
-      error_validation: loginResponse.error_validation,
+  const token = await authService.login(req.body);
+
+  if (!token.status)
+    return res.status(token.error.code).jsend.fail({
+      code: token.error.code,
+      message: token.error.message,
+      error_validation: token.error_validation,
     });
 
   return res.jsend.success({
     code: 200,
     message: "User berhasil login",
-    token: loginResponse.token,
+    token: token.token,
     error_validation: [],
   });
 };

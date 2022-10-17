@@ -43,6 +43,7 @@ exports.getAll = async (req, res, next) => {
   const getPosts = await postsService.getAll({
     user_id: req.user.id
   });
+  console.log(getPosts)
 
   if (!getPosts.status)
     return res.status(getPosts.error.code).jsend.fail({

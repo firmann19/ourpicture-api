@@ -48,6 +48,7 @@ class PostsService {
         getPosts,
       };
     } catch (err) {
+      console.log(err)
       return {
         status: false,
         error: {
